@@ -1,0 +1,50 @@
+Age,Attrition,Department,EducationField,Gender,JobRole,JobSatisfaction,MonthlyIncome,OverTime,YearsAtCompany
+41,Yes,Sales,Life Sciences,Female,Sales Executive,2,5993,Yes,6
+49,No,Research & Development,Life Sciences,Male,Research Scientist,4,5130,No,10
+37,Yes,Research & Development,Other,Male,Laboratory Technician,3,2090,Yes,0
+33,No,Research & Development,Life Sciences,Female,Research Scientist,2,2909,Yes,8
+27,No,Research & Development,Medical,Male,Laboratory Technician,3,3468,No,2
+32,No,Research & Development,Life Sciences,Male,Laboratory Technician,3,3068,No,7
+59,No,Research & Development,Medical,Female,Research Scientist,4,2670,No,1
+30,No,Research & Development,Life Sciences,Male,Laboratory Technician,3,2693,No,1
+38,No,Research & Development,Life Sciences,Male,Manufacturing Director,3,9526,No,9
+36,No,Research & Development,Medical,Male,Healthcare Representative,4,5237,No,7
+35,No,Research & Development,Life Sciences,Male,Research Scientist,3,2426,No,5
+29,Yes,Research & Development,Life Sciences,Female,Laboratory Technician,1,4193,Yes,1
+31,No,Research & Development,Life Sciences,Male,Research Scientist,3,2911,No,6
+34,No,Research & Development,Medical,Female,Research Scientist,4,2661,No,3
+28,Yes,Research & Development,Life Sciences,Male,Laboratory Technician,3,2028,No,1
+29,No,Research & Development,Life Sciences,Male,Laboratory Technician,3,9980,No,2
+32,No,Sales,Marketing,Male,Sales Executive,3,4500,No,4
+45,No,Sales,Marketing,Female,Sales Executive,4,7500,No,12
+26,Yes,Human Resources,Human Resources,Male,Human Resources,1,2500,Yes,0
+48,No,Research & Development,Life Sciences,Female,Research Scientist,4,6000,No,15
+55,No,Research & Development,Medical,Male,Healthcare Representative,4,8500,No,20
+40,No,Sales,Life Sciences,Female,Sales Executive,3,5500,No,8
+25,Yes,Research & Development,Life Sciences,Male,Research Scientist,2,2300,Yes,1
+42,No,Research & Development,Medical,Female,Manufacturing Director,4,9200,No,13
+50,No,Research & Development,Life Sciences,Male,Research Director,4,11000,No,18
+31,Yes,Sales,Marketing,Female,Sales Representative,1,2800,Yes,2
+44,No,Research & Development,Medical,Male,Healthcare Representative,3,6200,No,11
+35,No,Research & Development,Life Sciences,Female,Laboratory Technician,3,3200,No,6
+39,No,Sales,Life Sciences,Male,Sales Executive,4,6800,No,10
+47,No,Research & Development,Medical,Female,Research Scientist,4,7100,No,16
+28,Yes,Research & Development,Life Sciences,Male,Laboratory Technician,2,2400,Yes,0
+52,No,Research & Development,Life Sciences,Male,Manufacturing Director,4,9800,No,22
+36,No,Human Resources,Human Resources,Female,Human Resources,3,4200,No,7
+38,No,Sales,Marketing,Male,Sales Executive,3,5900,No,9
+33,Yes,Research & Development,Medical,Female,Laboratory Technician,1,2900,Yes,3
+46,No,Research & Development,Life Sciences,Male,Research Scientist,4,6500,No,14
+30,No,Research & Development,Life Sciences,Female,Healthcare Representative,3,5100,No,5
+43,No,Sales,Life Sciences,Male,Sales Executive,4,7700,No,13
+27,Yes,Research & Development,Other,Male,Laboratory Technician,2,2200,Yes,0
+41,No,Research & Development,Medical,Female,Research Scientist,4,5800,No,12
+55,No,Research & Development,Life Sciences,Male,Manufacturing Director,4,10500,No,25
+29,No,Research & Development,Life Sciences,Female,Laboratory Technician,3,3100,No,4
+34,Yes,Sales,Marketing,Male,Sales Representative,1,2600,Yes,1
+48,No,Research & Development,Medical,Female,Research Director,4,11800,No,19
+37,No,Research & Development,Life Sciences,Male,Research Scientist,3,4900,No,8
+45,No,Human Resources,Human Resources,Male,Human Resources,3,5300,No,11
+31,No,Research & Development,Medical,Female,Healthcare Representative,4,6400,No,6
+39,Yes,Research & Development,Life Sciences,Male,Laboratory Technician,2,2700,Yes,2
+50,No,Sales,Life Sciences,Female,Sales Executive,4,8200,No,17

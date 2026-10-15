@@ -1,0 +1,51 @@
+customerID,gender,SeniorCitizen,Partner,Dependents,tenure,PhoneService,InternetService,Contract,MonthlyCharges,TotalCharges,Churn
+0001-M,Male,0,Yes,No,1,No,DSL,Month-to-month,29.85,29.85,No
+0002-F,Female,0,No,No,34,Yes,DSL,One year,56.95,1889.50,No
+0003-M,Male,0,No,No,2,Yes,DSL,Month-to-month,53.85,108.15,Yes
+0004-F,Female,0,No,No,45,No,DSL,One year,42.30,1840.75,No
+0005-M,Male,0,No,No,2,Yes,Fiber optic,Month-to-month,70.70,151.65,Yes
+0006-F,Female,0,No,No,8,Yes,Fiber optic,Month-to-month,99.65,820.50,Yes
+0007-M,Male,0,No,No,22,Yes,Fiber optic,Month-to-month,89.10,1949.40,No
+0008-F,Female,0,No,No,10,No,DSL,Month-to-month,29.75,301.90,No
+0009-M,Male,1,No,No,28,Yes,Fiber optic,Month-to-month,104.80,3046.05,Yes
+0010-F,Female,0,Yes,Yes,62,Yes,DSL,Two year,56.15,3487.95,No
+0011-M,Male,0,No,No,13,Yes,DSL,Month-to-month,49.95,587.45,No
+0012-F,Female,0,No,No,1,Yes,Fiber optic,Month-to-month,74.50,74.50,Yes
+0013-M,Male,0,Yes,No,43,Yes,Fiber optic,One year,104.60,4592.55,No
+0014-F,Female,0,No,No,5,No,DSL,Month-to-month,24.10,125.55,Yes
+0015-M,Male,0,No,No,16,Yes,Fiber optic,Month-to-month,84.80,1377.50,No
+0016-F,Female,1,Yes,Yes,72,Yes,Fiber optic,Two year,115.50,8312.85,No
+0017-M,Male,0,No,No,3,Yes,DSL,Month-to-month,60.75,180.30,Yes
+0018-F,Female,0,No,No,55,Yes,Fiber optic,Two year,99.25,5428.10,No
+0019-M,Male,0,No,No,9,No,DSL,Month-to-month,25.35,235.60,Yes
+0020-F,Female,0,Yes,No,38,Yes,DSL,One year,59.60,2230.05,No
+0021-M,Male,0,No,No,27,Yes,Fiber optic,Month-to-month,91.45,2480.85,Yes
+0022-F,Female,0,No,No,67,Yes,DSL,Two year,45.20,3010.55,No
+0023-M,Male,1,No,No,4,Yes,Fiber optic,Month-to-month,80.30,325.45,Yes
+0024-F,Female,0,No,Yes,51,Yes,Fiber optic,One year,100.15,5102.50,No
+0025-M,Male,0,No,No,12,No,DSL,Month-to-month,30.55,369.55,No
+0026-F,Female,0,Yes,No,24,Yes,Fiber optic,Month-to-month,95.30,2280.80,Yes
+0027-M,Male,0,No,No,7,Yes,DSL,Month-to-month,44.20,310.40,Yes
+0028-F,Female,0,No,Yes,48,Yes,Fiber optic,Two year,109.90,5280.15,No
+0029-M,Male,0,No,No,18,Yes,DSL,One year,51.40,930.25,No
+0030-F,Female,0,No,No,3,No,DSL,Month-to-month,24.90,75.60,Yes
+0031-M,Male,0,Yes,No,31,Yes,Fiber optic,One year,102.35,3210.50,No
+0032-F,Female,0,No,No,15,Yes,DSL,Month-to-month,55.80,840.10,Yes
+0033-M,Male,1,No,No,58,Yes,Fiber optic,Two year,112.25,6525.80,No
+0034-F,Female,0,No,No,6,Yes,DSL,Month-to-month,47.65,285.90,Yes
+0035-M,Male,0,No,Yes,41,Yes,Fiber optic,One year,98.90,4064.75,No
+0036-F,Female,0,No,No,2,No,DSL,Month-to-month,26.40,52.80,Yes
+0037-M,Male,0,Yes,No,36,Yes,Fiber optic,Month-to-month,96.15,3475.30,No
+0038-F,Female,0,No,No,20,Yes,DSL,One year,58.70,1180.45,No
+0039-M,Male,0,No,No,11,Yes,Fiber optic,Month-to-month,87.55,963.05,Yes
+0040-F,Female,0,No,Yes,64,Yes,DSL,Two year,53.25,3412.80,No
+0041-M,Male,0,No,No,4,Yes,DSL,Month-to-month,49.10,196.40,Yes
+0042-F,Female,0,Yes,No,29,Yes,Fiber optic,Month-to-month,93.75,2720.55,No
+0043-M,Male,0,No,No,1,No,DSL,Month-to-month,23.65,23.65,Yes
+0044-F,Female,0,No,No,52,Yes,Fiber optic,Two year,107.40,5590.10,No
+0045-M,Male,0,No,No,14,Yes,DSL,Month-to-month,54.30,760.20,Yes
+0046-F,Female,0,Yes,Yes,70,Yes,DSL,Two year,57.80,4056.00,No
+0047-M,Male,1,No,No,9,Yes,Fiber optic,Month-to-month,82.60,745.40,Yes
+0048-F,Female,0,No,No,33,Yes,Fiber optic,One year,101.20,3348.60,No
+0049-M,Male,0,No,No,5,No,DSL,Month-to-month,27.85,139.25,Yes
+0050-F,Female,0,No,No,46,Yes,DSL,Two year,50.95,2350.70,No

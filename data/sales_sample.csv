@@ -1,0 +1,50 @@
+Order Date,Ship Mode,Segment,Region,Category,Sub-Category,Sales,Quantity,Discount,Profit
+2023-01-05,Standard Class,Consumer,East,Furniture,Bookcases,261.96,2,0.00,41.91
+2023-01-08,Second Class,Corporate,West,Technology,Phones,731.94,3,0.00,219.58
+2023-01-12,Standard Class,Consumer,East,Office Supplies,Binders,14.62,2,0.20,6.87
+2023-01-15,Standard Class,Home Office,Central,Furniture,Tables,957.58,5,0.45,2.87
+2023-01-19,First Class,Consumer,South,Technology,Phones,22.37,1,0.20,4.66
+2023-01-22,Same Day,Corporate,North,Office Supplies,Storage,48.86,7,0.00,14.17
+2023-01-26,Second Class,Consumer,East,Technology,Machines,1234.56,2,0.10,370.37
+2023-02-02,Standard Class,Home Office,West,Furniture,Bookcases,450.00,1,0.00,90.00
+2023-02-06,First Class,Corporate,Central,Office Supplies,Paper,78.20,4,0.15,19.55
+2023-02-10,Standard Class,Consumer,South,Furniture,Chairs,189.50,3,0.20,28.42
+2023-02-14,Second Class,Consumer,East,Technology,Phones,890.00,4,0.00,267.00
+2023-02-18,Same Day,Corporate,West,Office Supplies,Binders,36.40,5,0.30,3.64
+2023-02-22,Standard Class,Home Office,Central,Furniture,Tables,720.30,2,0.25,54.02
+2023-02-26,First Class,Consumer,North,Technology,Accessories,120.00,6,0.10,36.00
+2023-03-02,Second Class,Corporate,East,Office Supplies,Storage,245.10,8,0.05,73.53
+2023-03-06,Standard Class,Consumer,West,Furniture,Chairs,340.75,3,0.15,51.11
+2023-03-10,First Class,Home Office,South,Technology,Copiers,1050.00,1,0.00,315.00
+2023-03-14,Same Day,Consumer,Central,Office Supplies,Paper,62.30,3,0.20,12.46
+2023-03-18,Standard Class,Corporate,North,Furniture,Bookcases,580.00,2,0.10,116.00
+2023-03-22,Second Class,Consumer,East,Technology,Phones,420.50,2,0.05,126.15
+2023-04-01,Standard Class,Corporate,West,Furniture,Chairs,215.00,4,0.00,64.50
+2023-04-05,First Class,Consumer,East,Office Supplies,Storage,88.20,6,0.10,17.64
+2023-04-09,Second Class,Home Office,Central,Technology,Machines,1500.00,1,0.20,300.00
+2023-04-13,Standard Class,Consumer,South,Furniture,Tables,680.00,2,0.15,102.00
+2023-04-17,Same Day,Corporate,North,Office Supplies,Paper,45.60,4,0.00,13.68
+2023-04-21,First Class,Consumer,East,Technology,Phones,950.00,3,0.05,285.00
+2023-04-25,Standard Class,Home Office,West,Furniture,Bookcases,320.00,1,0.10,64.00
+2023-05-02,Second Class,Corporate,Central,Office Supplies,Binders,120.50,8,0.20,24.10
+2023-05-06,Standard Class,Consumer,North,Technology,Accessories,65.00,5,0.00,19.50
+2023-05-10,First Class,Home Office,South,Furniture,Chairs,410.00,3,0.25,61.50
+2023-05-14,Same Day,Consumer,East,Technology,Copiers,890.00,1,0.00,267.00
+2023-05-18,Standard Class,Corporate,West,Office Supplies,Storage,155.40,7,0.10,31.08
+2023-05-22,Second Class,Consumer,Central,Furniture,Tables,720.00,2,0.15,108.00
+2023-05-26,First Class,Home Office,North,Technology,Phones,520.00,2,0.05,156.00
+2023-06-02,Standard Class,Consumer,South,Office Supplies,Paper,38.40,3,0.00,11.52
+2023-06-06,Same Day,Corporate,East,Furniture,Bookcases,480.00,2,0.10,96.00
+2023-06-10,Second Class,Home Office,West,Technology,Machines,1650.00,1,0.20,330.00
+2023-06-14,Standard Class,Consumer,Central,Office Supplies,Binders,95.00,5,0.15,19.00
+2023-06-18,First Class,Corporate,North,Furniture,Chairs,290.00,4,0.00,87.00
+2023-06-22,Standard Class,Consumer,South,Technology,Phones,780.00,3,0.10,234.00
+2023-07-01,Same Day,Home Office,East,Office Supplies,Storage,210.00,6,0.05,63.00
+2023-07-05,Second Class,Corporate,West,Furniture,Tables,850.00,2,0.15,127.50
+2023-07-09,Standard Class,Consumer,Central,Technology,Accessories,145.00,8,0.00,43.50
+2023-07-13,First Class,Home Office,North,Office Supplies,Paper,52.80,4,0.10,10.56
+2023-07-17,Standard Class,Corporate,East,Furniture,Bookcases,395.00,1,0.00,118.50
+2023-07-21,Second Class,Consumer,South,Technology,Phones,620.00,2,0.05,186.00
+2023-07-25,Same Day,Home Office,West,Office Supplies,Binders,78.50,3,0.20,15.70
+2023-08-02,Standard Class,Consumer,Central,Furniture,Chairs,275.00,4,0.10,55.00
+2023-08-06,First Class,Corporate,North,Technology,Machines,1350.00,1,0.15,270.00
