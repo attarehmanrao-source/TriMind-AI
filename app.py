@@ -25,6 +25,9 @@ st.set_page_config(
 
 apply_custom_css()
 
+# Videos bigger than this are shown with st.video() instead of base64 embedding
+MAX_EMBED_MB = 15
+
 
 # ---------------- Video Player ----------------
 def embed_video(
@@ -38,12 +41,18 @@ def embed_video(
 
     The video starts muted where browser autoplay permits it.
     The user can click the custom button to enable sound and play.
+    Large videos fall back to st.video() so the page stays fast.
     """
 
     if not os.path.exists(path):
         return False
 
     try:
+        size_mb = os.path.getsize(path) / (1024 * 1024)
+        if size_mb > MAX_EMBED_MB:
+            st.video(path)
+            return True
+
         with open(path, "rb") as f:
             data = base64.b64encode(f.read()).decode("utf-8")
 
@@ -202,6 +211,18 @@ if "welcome_played" not in st.session_state:
 
 if not st.session_state.entered:
 
+    # Intro screen par sidebar chhupa dein (saaf look)
+    st.markdown(
+        """
+        <style>
+        [data-testid="stSidebar"],
+        [data-testid="stSidebarCollapsedControl"],
+        [data-testid="collapsedControl"] { display: none; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     st.markdown(
         '<div class="hero-title">TriMind AI</div>',
         unsafe_allow_html=True,
@@ -274,38 +295,55 @@ if (
 
 # ---------------- Hero ----------------
 
-col_logo, col_title = st.columns([1, 5])
 
-with col_logo:
-    if os.path.exists("assets/logo.png"):
-        st.image(
-            "assets/logo.png",
-            width=130,
+@st.cache_data(show_spinner=False)
+def _logo_b64(path: str, mtime: float) -> str:
+    """Logo as base64 so it can sit inline next to the title (mtime busts cache)."""
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+
+logo_html = ""
+if os.path.exists("assets/logo.png"):
+    logo_b64 = _logo_b64("assets/logo.png", os.path.getmtime("assets/logo.png"))
+    logo_html = (
+        f'<img src="data:image/png;base64,{logo_b64}" '
+        'width="64" style="border-radius:14px;"/>'
+    )
+
+with st.container(key="hero_panel"):
+    h_left, h_right = st.columns([3, 2], vertical_alignment="center")
+
+    with h_left:
+        st.markdown(
+            f"""
+            <div class="hero-badge">🚀 Unified AI Intelligence Platform</div>
+            <div class="hero-head">{logo_html}<div class="hero-title left">TriMind AI</div></div>
+            <div class="hero-slogan left">{SLOGAN}</div>
+            <div class="hero-desc">
+                Welcome to <b>TriMind AI</b> — a unified intelligence platform
+                that turns raw business data into decisions. Pick a room below:
+                analyse the past, predict the future, and download your own AI report.
+            </div>
+            <div class="chip-row">
+                <span class="chip">📈 Sales Forecasting</span>
+                <span class="chip">👥 Churn Prediction</span>
+                <span class="chip">🧑‍💼 HR Attrition</span>
+                <span class="chip">🤖 3 AI Models</span>
+                <span class="chip">📄 Auto Reports</span>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat"><b>3</b><span>Intelligence Rooms</span></div>
+                <div class="hero-stat"><b>3</b><span>Models per Room</span></div>
+                <div class="hero-stat"><b>1-click</b><span>AI Report</span></div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
-with col_title:
-    st.markdown(
-        '<div class="hero-title">TriMind AI</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        f'<div class="hero-slogan">{SLOGAN}</div>',
-        unsafe_allow_html=True,
-    )
-
-
-c1, c2 = st.columns([3, 1])
-
-with c1:
-    st.write(
-        "Welcome to **TriMind AI** — a unified intelligence platform "
-        "that turns raw business data into decisions. Pick a room below: "
-        "analyse the past, predict the future, and download your own AI report."
-    )
-
-with c2:
-    show_robot(height=180)
+    with h_right:
+        with st.container(key="hero_robot"):
+            show_robot(height=260)
 
 
 st.divider()

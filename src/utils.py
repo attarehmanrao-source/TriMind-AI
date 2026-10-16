@@ -1,4 +1,3 @@
-#src/utils.py
 """Shared helpers for TriMind AI: theme CSS, sidebar, footer, voice, reports."""
 import base64
 import io
@@ -10,6 +9,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 APP_NAME = "TriMind AI"
 SLOGAN = "Three Challenges. Three Predictions. One AI Platform."
@@ -22,33 +22,133 @@ def apply_custom_css():
     st.markdown(
         """
         <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+        /* ---------- Animations ---------- */
+        @keyframes gradientShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 18px rgba(108, 99, 255, 0.18); }
+            50%      { box-shadow: 0 0 34px rgba(139, 92, 246, 0.38); }
+        }
+
+        /* ---------- Base ---------- */
+        /* Solid background on purpose: the Lottie robot iframe is painted with
+           the theme colour #0E1117, so any gradient here makes it look like a
+           pasted box. Keep this EXACTLY equal to config.toml backgroundColor. */
+        .stApp {
+            font-family: 'Poppins', sans-serif;
+            background: #0E1117;
+        }
+        header[data-testid="stHeader"] { background: transparent; }
+        footer { visibility: hidden; }
+        .block-container { padding-top: 2rem; }
+        hr { border-color: rgba(139, 92, 246, 0.25) !important; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0E1117; }
+        ::-webkit-scrollbar-thumb { background: #6C63FF; border-radius: 8px; }
+
+        /* ---------- Hero ---------- */
         .hero-title {
-            font-size: 3.2rem; font-weight: 800; text-align: center;
-            background: linear-gradient(90deg, #a78bfa, #60a5fa);
+            font-size: 3.4rem; font-weight: 800; text-align: center;
+            background: linear-gradient(90deg, #a78bfa, #60a5fa, #f0abfc, #a78bfa);
+            background-size: 300% 300%;
+            animation: gradientShift 6s ease infinite;
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.2rem; letter-spacing: -1px;
         }
-        .hero-slogan { text-align: center; color: #b8bce6; font-size: 1.15rem; margin-bottom: 1.5rem; }
+        .hero-slogan {
+            text-align: center; color: #b8bce6; font-size: 1.15rem;
+            margin-bottom: 1.5rem; letter-spacing: 0.3px;
+        }
+
+        /* ---------- Cards ---------- */
         .module-card {
-            border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 16px;
-            padding: 1.4rem 1.2rem; background: rgba(26, 29, 41, 0.75);
-            box-shadow: 0 0 24px rgba(108, 99, 255, 0.12); height: 100%;
+            border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 18px;
+            padding: 1.4rem 1.2rem; min-height: 240px;
+            background: linear-gradient(145deg, rgba(48, 40, 98, 0.55), rgba(20, 22, 38, 0.85));
+            backdrop-filter: blur(10px);
+            animation: glowPulse 4s ease-in-out infinite;
+            transition: transform 0.25s ease, border-color 0.25s ease;
+            margin-bottom: 0.6rem;
         }
-        .module-card h3 { margin-top: 0.4rem; font-size: 1.25rem; }
-        .module-card p { color: #b8bce6; font-size: 0.92rem; }
+        .module-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(167, 139, 250, 0.9);
+        }
+        .module-card h3 { margin-top: 0.4rem; font-size: 1.2rem; color: #ffffff; }
+        .module-card p { color: #b8bce6; font-size: 0.92rem; line-height: 1.55; }
+
         .kpi-card {
-            border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px;
-            padding: 0.9rem 1rem; background: rgba(26, 29, 41, 0.7); text-align: center;
+            border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 14px;
+            padding: 0.9rem 1rem; text-align: center; min-height: 150px;
+            background: linear-gradient(145deg, rgba(40, 36, 80, 0.55), rgba(26, 29, 41, 0.8));
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
-        .kpi-value { font-size: 1.7rem; font-weight: 700; }
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(108, 99, 255, 0.3);
+        }
+        .kpi-value { font-size: 1.7rem; font-weight: 700; color: #ffffff; }
         .kpi-label { color: #b8bce6; font-size: 0.85rem; }
+
+        /* ---------- Dedication ---------- */
         .dedication {
-            margin-top: 3rem; padding: 1.4rem; border-radius: 14px; text-align: center;
-            border: 1px solid rgba(139, 92, 246, 0.35); background: rgba(26, 29, 41, 0.6);
+            margin-top: 3rem; padding: 1.4rem; border-radius: 16px; text-align: center;
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            background: linear-gradient(145deg, rgba(48, 40, 98, 0.4), rgba(26, 29, 41, 0.7));
         }
         .dedication h4 { margin-bottom: 0.4rem; }
-        .dedication p { color: #c9cdeF; font-size: 0.95rem; margin: 0.25rem 0; }
+        .dedication p { color: #c9cdef; font-size: 0.95rem; margin: 0.25rem 0; }
+
+        /* ---------- Sidebar ---------- */
+        section[data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #1A1D29 0%, #14122b 100%);
+            border-right: 1px solid rgba(139, 92, 246, 0.25);
+        }
         section[data-testid="stSidebar"] img { border-radius: 10px; }
+        a[data-testid="stPageLink-NavLink"]:hover {
+            background: rgba(139, 92, 246, 0.2); border-radius: 10px;
+        }
+
+        /* ---------- Buttons ---------- */
+        .stButton > button, .stDownloadButton > button {
+            border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.6);
+            background: linear-gradient(90deg, #6C63FF, #8b5cf6);
+            color: #ffffff; font-weight: 600; transition: all 0.2s ease;
+        }
+        .stButton > button:hover, .stDownloadButton > button:hover {
+            box-shadow: 0 0 18px rgba(139, 92, 246, 0.6);
+            transform: translateY(-2px);
+            border-color: #a78bfa; color: #ffffff;
+        }
+
+        /* ---------- Widgets ---------- */
+        div[data-testid="stMetric"] {
+            border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 14px;
+            padding: 0.7rem 1rem; background: rgba(26, 29, 41, 0.7);
+        }
+        div[data-testid="stFileUploader"] section {
+            border: 1px dashed rgba(139, 92, 246, 0.55); border-radius: 14px;
+            background: rgba(26, 29, 41, 0.5);
+        }
+        div[data-testid="stDataFrame"] {
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            border-radius: 12px; overflow: hidden;
+        }
+        div[data-testid="stExpander"] {
+            border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px;
+        }
+        .stTabs [data-baseweb="tab-list"] button[aria-selected="true"] { color: #a78bfa; }
+        .stTabs [data-baseweb="tab-highlight"] { background-color: #8b5cf6; }
+        div[data-baseweb="select"] > div,
+        .stTextInput input, .stNumberInput input {
+            border-radius: 10px; border-color: rgba(139, 92, 246, 0.35);
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -67,7 +167,7 @@ def render_sidebar():
         st.markdown("**🎓 Student Developer**")
         card = "assets/card.png"
         if os.path.exists(card):
-            st.image(card, use_column_width=True)
+            st.image(card, use_container_width=True)
         else:
             st.info("Add your campus card as `assets/card.png`")
         st.markdown("**M ATTA UR REHMAN KHAN**")
@@ -99,14 +199,11 @@ def render_footer():
 
 def play_voice(name: str, autoplay: bool = True):
     """
-    Play an MP3 announcement from assets/audio/ WITHOUT showing a player.
+    Play an MP3 announcement from assets/audio/ without showing a player.
 
-    Uses HTML5 <audio autoplay> with base64-embedded MP3 so the sound
-    starts on its own (no play button visible to the user).
-
+    Uses components.html (st.markdown does not run <script> tags).
     NOTE: Browsers block autoplay until the user interacts with the page
-    at least once (Chrome/Edge/Firefox policy). After the first click
-    anywhere in the app, all subsequent play_voice() calls will autoplay.
+    at least once. After the first click, play_voice() will autoplay.
     """
     path = f"assets/audio/{name}.mp3"
     if not os.path.exists(path):
@@ -115,25 +212,39 @@ def play_voice(name: str, autoplay: bool = True):
         with open(path, "rb") as f:
             b64 = base64.b64encode(f.read()).decode()
 
-        autoplay_attr = "autoplay" if autoplay else ""
-        audio_html = f"""
-        <audio {autoplay_attr} style="display:none;" preload="auto">
-            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-        </audio>
-        <script>
-        // Try to force-play; ignore errors if browser blocks autoplay.
-        (function() {{
-            var audios = window.parent.document.querySelectorAll('audio');
-            if (audios.length) {{
-                var a = audios[audios.length - 1];
-                a.play().catch(function() {{ /* blocked by browser, silent */ }});
-            }}
-        }})();
-        </script>
-        """
-        st.markdown(audio_html, unsafe_allow_html=True)
+        auto = "autoplay" if autoplay else ""
+        components.html(
+            f"""
+            <audio id="vp" {auto} style="display:none;" preload="auto">
+                <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+            </audio>
+            <script>
+                var a = document.getElementById('vp');
+                if (a) {{ a.play().catch(function() {{ /* blocked by browser */ }}); }}
+            </script>
+            """,
+            height=0,
+        )
     except Exception:
         pass
+
+
+@st.cache_data(show_spinner=False)
+def _robot_transparent_b64(path: str, mtime: float, tol: int = 18) -> str:
+    """
+    Remove the solid background of the robot image (flood-fill from the
+    corners) so it blends into the page. `mtime` only busts the cache when
+    the file changes.
+    """
+    from PIL import Image, ImageDraw
+
+    img = Image.open(path).convert("RGBA")
+    w, h = img.size
+    for corner in [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)]:
+        ImageDraw.floodfill(img, corner, (0, 0, 0, 0), thresh=tol)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode()
 
 
 def show_robot(height: int = 220):
@@ -152,8 +263,33 @@ def show_robot(height: int = 220):
             return
     except Exception:
         pass
-    if os.path.exists("assets/robot.png"):
-        st.image("assets/robot.png", width=min(height, 220))
+
+    path = "assets/robot.png"
+    if not os.path.exists(path):
+        return
+    try:
+        b64 = _robot_transparent_b64(path, os.path.getmtime(path))
+        st.markdown(
+            f"""
+            <style>
+            @keyframes robotFloat {{
+                0%, 100% {{ transform: translateY(0); }}
+                50%      {{ transform: translateY(-8px); }}
+            }}
+            .robot-float {{
+                display: block; margin: 0 auto; max-width: 100%;
+                animation: robotFloat 4s ease-in-out infinite;
+                filter: drop-shadow(0 0 18px rgba(139, 92, 246, 0.45));
+            }}
+            </style>
+            <img class="robot-float" width="{min(height, 220)}"
+                 src="data:image/png;base64,{b64}" alt="TriMind robot"/>
+            """,
+            unsafe_allow_html=True,
+        )
+    except Exception:
+        # Pillow problem etc. -> plain image so the page never breaks
+        st.image(path, width=min(height, 220))
 
 
 def validate_upload(df: pd.DataFrame, required_cols):
@@ -194,5 +330,3 @@ td,th{{border:1px solid #444;padding:8px}}th{{background:#1A1D29}}</style>
 <h2>📝 Notes</h2><p>{notes}</p>
 <hr><p><i>Dedicated to respected teacher Mr. Muhammad Azeem.</i></p>
 </body></html>"""
-
-
