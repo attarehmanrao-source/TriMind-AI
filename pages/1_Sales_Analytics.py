@@ -32,7 +32,7 @@ with col1:
         st.switch_page("app.py") 
 # ------------------
 
-# ---------------- Tabs ko 2 rows mein todo (4 + 4) ----------------
+# ---------------- Tabs ----------------
 st.markdown("""
 <style>
 div[data-baseweb="tab-list"] {
@@ -42,7 +42,7 @@ div[data-baseweb="tab-list"] {
     row-gap: 8px !important;
 }
 div[data-baseweb="tab-list"] button[role="tab"] {
-    flex: 0 0 calc(25% - 4px) !important;   /* 4 tabs per row */
+    flex: 0 0 calc(25% - 4px) !important;
     justify-content: center !important;
     border-radius: 10px !important;
     border: 1px solid rgba(52,211,153,0.25) !important;
@@ -63,7 +63,6 @@ div[data-baseweb="tab-border"] {
 PALETTE = ["#8b5cf6", "#60a5fa", "#34d399", "#fbbf24", "#f472b6", "#fb923c"]
 MODEL_COLORS = ["#34d399", "#60a5fa", "#f472b6", "#fbbf24"]
 
-# Safe defaults (NameError se bachne ke liye)
 mpl_b64 = ""
 avp_b64 = ""
 
@@ -111,12 +110,9 @@ with st.status("Cleaning data…", expanded=True) as s:
     s.update(label=f"Cleaned: {df.shape[0]:,} rows × {df.shape[1]} columns", state="complete")
 st.toast("Data cleaned ✅", icon="🧹")
 
-
 # ---------------- Saved model auto-load ----------------
-# FIX: @st.cache_resource lagaya gaya hai taake model baar baar load na ho
 @st.cache_resource(show_spinner=False)
 def _load_saved_sales_model():
-    """Saved sales model wapas load karo (sales.load_model ho to wo, warna joblib)."""
     loader = getattr(sales, "load_model", None)
     if loader is not None:
         return loader("sales_best_model.pkl")
@@ -125,20 +121,18 @@ def _load_saved_sales_model():
         raise FileNotFoundError(path)
     return joblib.load(path)
 
-
 if "sales_pipes" not in st.session_state:
     try:
         saved = _load_saved_sales_model()
         X_tr, X_te, y_tr, y_te = sales.split(df)
         res = sales.evaluate({"Saved Model": saved}, X_te, y_te)
-        # Agar saved model ka R² NaN aaye (purana/ghalat model), to usay use na karein
         if pd.to_numeric(res["R²"], errors="coerce").notna().any():
             st.session_state["sales_pipes"] = {"Saved Model": saved}
             st.session_state["sales_results"] = res
             st.session_state["sales_splits"] = (X_tr, X_te, y_tr, y_te)
             st.session_state["sales_autoloaded"] = True
     except Exception:
-        pass  # model file nahi mila ya purane columns se match nahi karta
+        pass
 
 # ---------------- TABS ----------------
 tab1, tab2, tab3, tab4, tab5, tab6, tab_cmp, tab7 = st.tabs([
@@ -163,9 +157,12 @@ with tab2:
         cat_filter = st.multiselect("Category", df['Category'].unique(), default=df['Category'].unique())
 
     filtered_df = df[(df['Region'].isin(region_filter)) & (df['Category'].isin(cat_filter))]
-    st.write(f"Showing {len(filtered_df):,} rows")
-    st.dataframe(filtered_df, use_container_width=True)
-    st.download_button("📥 Download Filtered Data", filtered_df.to_csv(index=False), "filtered_sales.csv", "text/csv")
+    
+    # FIX: 50,000 rows ki jagah sirf 1000 rows screen par dikhayenge taake hang na ho
+    st.write(f"Showing first 1,000 rows out of {len(filtered_df):,}")
+    st.dataframe(filtered_df.head(1000), use_container_width=True)
+    
+    st.download_button("📥 Download Full Filtered Data", filtered_df.to_csv(index=False), "filtered_sales.csv", "text/csv")
 
 with tab3:
     play_voice("analyzing")
@@ -231,7 +228,6 @@ with tab6:
 
         results = sales.evaluate(pipes, X_test, y_test)
 
-        # SAVE MODEL (Assignment Requirement)
         best_name = results.iloc[0]["Model"]
         sales.save_model(pipes[best_name], "sales_best_model.pkl")
 
@@ -306,13 +302,8 @@ with tab_cmp:
             st.info("Abhi sirf ek saved model load hai. Teeno ka muqabla karne ke liye **Model Evaluation** tab mein **Train 3 Models** dabayein.")
 
         if cmp_res[metric_cols].isna().all().any():
-            st.error(
-                "Kisi metric (R², RMSE ya MAE) ki saari values NaN hain. "
-                "Data mein missing values check karein, ya models/sales_best_model.pkl delete "
-                "kar ke **Train 3 Models** dobara dabayein."
-            )
+            st.error("Kisi metric (R², RMSE ya MAE) ki saari values NaN hain. Data mein missing values check karein.")
 
-        # ---- Winners ----
         st.subheader("🏆 Har metric ka winner")
         wcols = st.columns(len(metric_cols))
         for col, m in zip(wcols, metric_cols):
@@ -332,7 +323,6 @@ with tab_cmp:
         if rank_s.notna().any():
             st.success(f"🥇 Overall best: **{rank_s.index[0]}** (average rank {rank_s.iloc[0]:.2f}, 1 = sab se behtar)")
 
-        # ---- Table ----
         st.subheader("📋 Metrics table (best value highlighted)")
         hl = "background-color:#34d399;color:#111;font-weight:bold"
         styled = (cmp_res.style
@@ -340,22 +330,17 @@ with tab_cmp:
                   .highlight_min(subset=lower_better, props=hl)
                   .format({m: "{:,.4f}" for m in metric_cols}, na_rep="—"))
         st.dataframe(styled, use_container_width=True)
-        st.download_button("📥 Download comparison (CSV)", cmp_res.to_csv(index=False),
-                           file_name="sales_model_comparison.csv", mime="text/csv")
+        st.download_button("📥 Download comparison (CSV)", cmp_res.to_csv(index=False), file_name="sales_model_comparison.csv", mime="text/csv")
 
-        # ---- R² bar + Error bars ----
         g1, g2 = st.columns(2)
         with g1:
-            fig_r2 = px.bar(cmp_res, x="Model", y="R²", color="Model", text="R²",
-                            title="R² (zyada behtar)", color_discrete_map=color_map)
+            fig_r2 = px.bar(cmp_res, x="Model", y="R²", color="Model", text="R²", title="R² (zyada behtar)", color_discrete_map=color_map)
             st.plotly_chart(style_fig(fig_r2), use_container_width=True)
         with g2:
             err_melt = cmp_res.melt(id_vars="Model", value_vars=lower_better, var_name="Error", value_name="Value")
-            fig_err = px.bar(err_melt, x="Model", y="Value", color="Error", barmode="group",
-                             title="RMSE & MAE (kam behtar)")
+            fig_err = px.bar(err_melt, x="Model", y="Value", color="Error", barmode="group", title="RMSE & MAE (kam behtar)")
             st.plotly_chart(style_fig(fig_err), use_container_width=True)
 
-        # ---- Predictions ----
         preds = {name: np.asarray(pipe.predict(cmp_Xt)) for name, pipe in cmp_pipes.items()}
         y_arr = np.asarray(cmp_yt)
 
@@ -364,25 +349,20 @@ with tab_cmp:
         pick = rng.choice(len(y_arr), size=min(1500, len(y_arr)), replace=False)
         fig_avp = go.Figure()
         for name, p in preds.items():
-            fig_avp.add_trace(go.Scatter(x=y_arr[pick], y=p[pick], mode="markers", name=name,
-                                         opacity=0.45, marker=dict(size=5, color=color_map.get(name))))
+            fig_avp.add_trace(go.Scatter(x=y_arr[pick], y=p[pick], mode="markers", name=name, opacity=0.45, marker=dict(size=5, color=color_map.get(name))))
         lo = float(min(y_arr.min(), *[p.min() for p in preds.values()]))
         hi = float(max(y_arr.max(), *[p.max() for p in preds.values()]))
-        fig_avp.add_trace(go.Scatter(x=[lo, hi], y=[lo, hi], mode="lines", name="Perfect prediction",
-                                     line=dict(dash="dash", color="#9ca3af")))
+        fig_avp.add_trace(go.Scatter(x=[lo, hi], y=[lo, hi], mode="lines", name="Perfect prediction", line=dict(dash="dash", color="#9ca3af")))
         fig_avp.update_layout(xaxis_title="Actual Profit", yaxis_title="Predicted Profit")
         st.plotly_chart(style_fig(fig_avp), use_container_width=True)
 
-        # ---- Residuals ----
         st.subheader("📏 Residuals (Actual − Predicted)")
         fig_res = go.Figure()
         for name, p in preds.items():
             fig_res.add_trace(go.Box(y=(y_arr - p)[pick], name=name, marker_color=color_map.get(name), boxmean=True))
         fig_res.update_layout(yaxis_title="Residual ($)", showlegend=False)
         st.plotly_chart(style_fig(fig_res), use_container_width=True)
-        st.caption("Box jitna chhota aur 0 ke qareeb ho, model utna behtar. Lambi whiskers matlab kuch orders mein bohat bara error.")
 
-        # ---- Bias table ----
         bias_rows = []
         for name, p in preds.items():
             resid = y_arr - p
@@ -393,18 +373,13 @@ with tab_cmp:
                 "Sab se bara over-prediction ($)": round(float(-resid.min()), 2),
             })
         st.dataframe(pd.DataFrame(bias_rows), use_container_width=True)
-        st.caption("Bias positive ho to model aam tor par profit **kam** batata hai, negative ho to **zyada** batata hai.")
 
-        # ---- Training time ----
         times = st.session_state.get("sales_times")
         if times:
             st.subheader("⏱️ Training time")
             t_df = pd.DataFrame({"Model": list(times.keys()), "Seconds": list(times.values())})
-            st.plotly_chart(style_fig(px.bar(t_df, x="Model", y="Seconds", color="Model", text="Seconds",
-                                             color_discrete_map=color_map, title="Training Time (seconds)")),
-                            use_container_width=True)
+            st.plotly_chart(style_fig(px.bar(t_df, x="Model", y="Seconds", color="Model", text="Seconds", color_discrete_map=color_map, title="Training Time (seconds)")), use_container_width=True)
 
-        # ---- Verdict ----
         st.subheader("📝 Natija")
         if cmp_res[metric_cols].notna().all().all() or all(cmp_res[m].notna().any() for m in metric_cols):
             b_r2 = cmp_res.loc[cmp_res["R²"].idxmax()]
@@ -415,8 +390,6 @@ with tab_cmp:
                 f"- **Sab se kam bara errors (RMSE):** {b_rmse['Model']} ({b_rmse['RMSE']:,.2f})\n"
                 f"- **Sab se kam average error (MAE):** {b_mae['Model']} ({b_mae['MAE']:,.2f})"
             )
-        else:
-            st.warning("Natija abhi nahi dikha sakte, kyunke metrics NaN hain. Upar wali error dekhein.")
 
 with tab7:
     if "sales_pipes" in st.session_state:

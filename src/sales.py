@@ -57,10 +57,10 @@ def _preprocessor():
 def get_models():
     return {
         "Linear Regression": LinearRegression(),
-        # Random Forest کو انتہائی ہلکا کر دیا (10 trees)
+        # Random Forest کو انتہائی ہلکا کر دیا
         "Random Forest": RandomForestRegressor(
             n_estimators=10, random_state=RANDOM_STATE, n_jobs=1),
-        # Neural Network کو بھی بہت ہلکا کر دیا تاکہ فوراً ٹرین ہو
+        # Neural Network کو بھی بہت ہلکا کر دیا
         "Neural Network (MLP)": MLPRegressor(
             hidden_layer_sizes=(10, 10), max_iter=50, random_state=RANDOM_STATE),
     }
@@ -89,6 +89,11 @@ def evaluate(pipes, X_test, y_test):
 
 
 def split(df: pd.DataFrame):
+    # یہاں ڈیٹا کو محدود کر دیا گیا ہے
+    # اگر ڈیٹا 10,000 سے زیادہ ہو تو صرف 10,000 لائنیں لے کر ٹرین کریں گے
+    if len(df) > 10000:
+        df = df.sample(n=10000, random_state=RANDOM_STATE)
+        
     X, y = get_xy(df)
     return train_test_split(X, y, test_size=0.2, random_state=RANDOM_STATE)
 
