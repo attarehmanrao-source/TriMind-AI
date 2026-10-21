@@ -16,15 +16,21 @@ from sklearn.pipeline import Pipeline
 
 from src import sales
 from src.utils import (apply_custom_css, build_html_report, fig_to_base64,
-                       play_voice, render_footer, render_sidebar, show_robot,
+                       play_voice, render_footer, show_robot,
                        validate_upload)
 from src.ui import (PALETTE, apply_page_css, best_banner, kpi, page_header,
                     section, style_fig, style_mpl, result_card)
 
 st.set_page_config(page_title="Sales Analytics — TriMind AI", page_icon="📈", layout="wide")
 apply_custom_css()
-render_sidebar()
 apply_page_css(accent_rgb="52,211,153")
+
+# --- BACK BUTTON ---
+col1, col2 = st.columns([1, 5])
+with col1:
+    if st.button("⬅️ Back to Home", use_container_width=True):
+        st.switch_page("app.py") 
+# ------------------
 
 # ---------------- Tabs ko 2 rows mein todo (4 + 4) ----------------
 st.markdown("""
@@ -107,6 +113,8 @@ st.toast("Data cleaned ✅", icon="🧹")
 
 
 # ---------------- Saved model auto-load ----------------
+# FIX: @st.cache_resource lagaya gaya hai taake model baar baar load na ho
+@st.cache_resource(show_spinner=False)
 def _load_saved_sales_model():
     """Saved sales model wapas load karo (sales.load_model ho to wo, warna joblib)."""
     loader = getattr(sales, "load_model", None)

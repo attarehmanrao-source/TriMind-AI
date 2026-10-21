@@ -3,6 +3,7 @@
 import os
 import joblib
 import pandas as pd
+import streamlit as st
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -18,6 +19,8 @@ REQUIRED_COLS = ["gender", "tenure", "MonthlyCharges", "TotalCharges", TARGET]
 RANDOM_STATE = 42
 
 
+# CACHING: ڈیٹا بار بار لوڈ نہ ہو
+@st.cache_data(show_spinner=False)
 def load_data(path="data/churn_sample.csv") -> pd.DataFrame:
     return pd.read_csv(path)
 
@@ -51,11 +54,13 @@ def get_models():
     return {
         "Logistic Regression": LogisticRegression(
             max_iter=1000, class_weight="balanced", random_state=RANDOM_STATE),
+        # Random Forest کو ہلکا کر دیا (10 trees)
         "Random Forest": RandomForestClassifier(
-            n_estimators=150, class_weight="balanced",
-            random_state=RANDOM_STATE, n_jobs=-1),
+            n_estimators=10, class_weight="balanced",
+            random_state=RANDOM_STATE, n_jobs=1),
+        # Neural Network کو ہلکا کر دیا (50 iterations)
         "Neural Network (MLP)": MLPClassifier(
-            hidden_layer_sizes=(64, 32), max_iter=500, random_state=RANDOM_STATE),
+            hidden_layer_sizes=(10, 10), max_iter=50, random_state=RANDOM_STATE),
     }
 
 
@@ -122,7 +127,6 @@ def confusion_df(y_true, y_pred):
                         columns=["Predicted: Stayed", "Predicted: Churned"])
 
 
-# --- NAYA FUNCTION: Model Save Karne Ke Liye ---
 def save_model(pipe, filename="churn_best_model.pkl"):
     """Trained model ko models/ folder mein save karta hai."""
     os.makedirs("models", exist_ok=True)

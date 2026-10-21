@@ -1,4 +1,4 @@
-"""Shared helpers for TriMind AI: theme CSS, sidebar, footer, voice, reports."""
+"""Shared helpers for TriMind AI: theme CSS, footer, voice, reports."""
 import base64
 import io
 import os
@@ -11,13 +11,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
+import math
 
 APP_NAME = "TriMind AI"
 SLOGAN = "Three Challenges. Three Predictions. One AI Platform."
 VERSION = "v1.0.0"
 
 LOTTIE_ROBOT_URL = "https://assets10.lottiefiles.com/packages/lf20_tno6cg2w.json"
-
 
 def apply_custom_css():
     st.markdown(
@@ -37,16 +37,24 @@ def apply_custom_css():
         }
 
         /* ---------- Base ---------- */
-        /* Solid background on purpose: the Lottie robot iframe is painted with
-           the theme colour #0E1117, so any gradient here makes it look like a
-           pasted box. Keep this EXACTLY equal to config.toml backgroundColor. */
         .stApp {
             font-family: 'Poppins', sans-serif;
             background: #0E1117;
         }
         header[data-testid="stHeader"] { background: transparent; }
         footer { visibility: hidden; }
-        .block-container { padding-top: 2rem; }
+        
+        /* ---------- HIDE STREAMLIT DEFAULT SIDEBAR ---------- */
+        [data-testid="stSidebar"] { display: none !important; }
+        [data-testid="stSidebarCollapsedControl"] { display: none !important; }
+        [data-testid="collapsedControl"] { display: none !important; }
+        
+        .block-container { 
+            padding-top: 2rem; 
+            max-width: 100% !important;
+            padding-left: 3rem !important;
+            padding-right: 3rem !important;
+        }
         hr { border-color: rgba(139, 92, 246, 0.25) !important; }
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -67,9 +75,7 @@ def apply_custom_css():
             margin-bottom: 1.5rem; letter-spacing: 0.3px;
         }
 
-        /* ---------- Hero panel ----------
-           Fill must stay EXACTLY #0E1117 (same as the robot iframe),
-           so only the border and the OUTER glow are decorated. */
+        /* ---------- Hero panel ---------- */
         @keyframes floatY {
             0%, 100% { transform: translateY(0); }
             50%      { transform: translateY(-10px); }
@@ -153,16 +159,6 @@ def apply_custom_css():
         .dedication h4 { margin-bottom: 0.4rem; }
         .dedication p { color: #c9cdef; font-size: 0.95rem; margin: 0.25rem 0; }
 
-        /* ---------- Sidebar ---------- */
-        section[data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #1A1D29 0%, #14122b 100%);
-            border-right: 1px solid rgba(139, 92, 246, 0.25);
-        }
-        section[data-testid="stSidebar"] img { border-radius: 10px; }
-        a[data-testid="stPageLink-NavLink"]:hover {
-            background: rgba(139, 92, 246, 0.2); border-radius: 10px;
-        }
-
         /* ---------- Buttons ---------- */
         .stButton > button, .stDownloadButton > button {
             border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.6);
@@ -204,31 +200,7 @@ def apply_custom_css():
 
 
 def render_sidebar():
-    with st.sidebar:
-        logo = "assets/logo.png"
-        if os.path.exists(logo):
-            st.image(logo, width=110)
-        st.markdown(f"### {APP_NAME}")
-        st.caption(SLOGAN)
-
-        st.divider()
-        st.markdown("**🎓 Student Developer**")
-        card = "assets/card.png"
-        if os.path.exists(card):
-            st.image(card, use_container_width=True)
-        else:
-            st.info("Add your campus card as `assets/card.png`")
-        st.markdown("**M ATTA UR REHMAN KHAN**")
-        st.caption("AI-777760 · Artificial Intelligence and Data Science · SMIT")
-
-        st.divider()
-        st.page_link("app.py", label="🏠 Home")
-        st.page_link("pages/1_Sales_Analytics.py", label="📈 Sales Analytics")
-        st.page_link("pages/2_Customer_Churn.py", label="👥 Customer Churn")
-        st.page_link("pages/3_HR_Analytics.py", label="🧑‍💼 HR Analytics")
-
-        st.divider()
-        st.caption(f"{APP_NAME} {VERSION}")
+    return  # سائیڈبار ڈس ایبل ہے
 
 
 def render_footer():
@@ -245,21 +217,20 @@ def render_footer():
     )
 
 
-def play_voice(name: str, autoplay: bool = True):
-    """
-    Play an MP3 announcement from assets/audio/ without showing a player.
+# ==========================================
+# CACHING FIX: آواز کو بار بار پروسیس ہونے سے بچانے کے لیے کیشنگ
+# ==========================================
+@st.cache_data(show_spinner=False)
+def _get_audio_base64(path: str, mtime: float) -> str:
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
-    Uses components.html (st.markdown does not run <script> tags).
-    NOTE: Browsers block autoplay until the user interacts with the page
-    at least once. After the first click, play_voice() will autoplay.
-    """
+def play_voice(name: str, autoplay: bool = True):
     path = f"assets/audio/{name}.mp3"
     if not os.path.exists(path):
         return
     try:
-        with open(path, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode()
-
+        b64 = _get_audio_base64(path, os.path.getmtime(path))
         auto = "autoplay" if autoplay else ""
         components.html(
             f"""
@@ -277,12 +248,7 @@ def play_voice(name: str, autoplay: bool = True):
         pass
 
 
-# ---------------- Animated room illustrations (v2: glass-dashboard style) ----------------
-# Self-contained animated SVGs (no network, no iframe, transparent background).
-# Shown through <img src="data:image/svg+xml;base64,..."> so Streamlit's markdown
-# parser never touches them and the CSS/SMIL animations inside keep running.
-import math
-
+# ---------------- Animated room illustrations ----------------
 _FONT = "Segoe UI,Roboto,Helvetica,Arial,sans-serif"
 
 _SVG_DEFS = """
@@ -321,13 +287,11 @@ _BG_ORBS = (
     '<circle class="orb" cx="300" cy="225" r="38" fill="#60a5fa" opacity=".16" filter="url(#blur)" style="animation-delay:-4s"/>'
 )
 
-
 def _t(x, y, txt, size=10, weight=400, fill="#ffffff", anchor="start", extra=""):
     return (
         f'<text x="{x}" y="{y}" font-family="{_FONT}" font-size="{size}" font-weight="{weight}" '
         f'fill="{fill}" text-anchor="{anchor}" {extra}>{txt}</text>'
     )
-
 
 def _card(x, y, w, h, content, cls="fl", rx=16):
     return (
@@ -337,7 +301,6 @@ def _card(x, y, w, h, content, cls="fl", rx=16):
         f"{content}</g>"
     )
 
-
 def _avatar(cx, cy, r, grad):
     return (
         f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="url(#{grad})"/>'
@@ -345,9 +308,7 @@ def _avatar(cx, cy, r, grad):
         f'<path d="M{cx - r * 0.5:.1f} {cy + r * 0.58:.1f} a{r * 0.5:.1f} {r * 0.46:.1f} 0 0 1 {r:.1f} 0 z" fill="#fff" fill-opacity=".95"/>'
     )
 
-
 def _smooth(points):
-    """Catmull-Rom spline through the points, as a cubic-Bezier SVG path."""
     p = points
     d = f"M{p[0][0]:.1f} {p[0][1]:.1f}"
     for i in range(len(p) - 1):
@@ -359,7 +320,6 @@ def _smooth(points):
         d += f" C{c1[0]:.1f} {c1[1]:.1f} {c2[0]:.1f} {c2[1]:.1f} {p2[0]:.1f} {p2[1]:.1f}"
     return d
 
-
 def _svg_wrap(css: str, body: str) -> str:
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">'
@@ -367,7 +327,7 @@ def _svg_wrap(css: str, body: str) -> str:
     )
 
 
-# =====================  SALES: revenue dashboard  =====================
+# =====================  SALES  =====================
 _S_PTS = [(38, 214), (74, 200), (110, 208), (146, 176), (182, 184), (218, 150), (256, 118)]
 _S_LINE = _smooth(_S_PTS)
 _S_AREA = _S_LINE + " L256 240 L38 240 Z"
@@ -460,21 +420,17 @@ _SALES_BODY = (
     '<circle class="tw" cx="392" cy="150" r="2" fill="#fff"/><circle class="tw" cx="12" cy="200" r="2" fill="#fff" style="animation-delay:-1.2s"/>'
 )
 
-# =====================  CHURN: customer radar + at-risk list  =====================
+# =====================  CHURN  =====================
 _CX, _CY = 118, 150
-
 
 def _polar(a_deg, r):
     a = math.radians(a_deg)
     return round(_CX + r * math.cos(a), 1), round(_CY + r * math.sin(a), 1)
 
-
-# (angle clockwise from +x, radius, kind)  kind: ok | risk | warn
 _C_DOTS = [
     (30, 70, "ok"), (80, 42, "ok"), (120, 84, "risk"), (170, 58, "ok"),
     (215, 86, "risk"), (262, 38, "ok"), (305, 72, "warn"), (340, 52, "ok"),
 ]
-
 
 def _churn_dot(a, r, kind):
     x, y = _polar(a, r)
@@ -485,7 +441,6 @@ def _churn_dot(a, r, kind):
         col = "#fb7185" if kind == "risk" else "#fbbf24"
         ring = f'<circle class="pulse" cx="{x}" cy="{y}" r="9" fill="none" stroke="{col}" stroke-width="2" style="animation-delay:{delay}s"/>'
     return f'{ring}<g class="c-blip" style="animation-delay:{delay}s">{_avatar(x, y, 9, grad)}</g>'
-
 
 _a0x, _a0y = _polar(-55, 100)
 _C_WEDGE = f"M{_CX} {_CY} L{_a0x} {_a0y} A100 100 0 0 1 {_CX + 100} {_CY} Z"
@@ -545,11 +500,10 @@ _CHURN_BODY = (
     + '<circle class="tw" cx="14" cy="60" r="2" fill="#fff"/><circle class="tw" cx="392" cy="270" r="2" fill="#fff" style="animation-delay:-1.4s"/>'
 )
 
-# =====================  HR: workforce network + attrition card  =====================
+# =====================  HR  =====================
 _HX, _HY = 122, 150
 _H_SPARK = _smooth([(254, 204), (272, 196), (290, 200), (308, 186), (326, 190), (344, 176), (360, 180), (376, 170)])
 _H_SPARK_AREA = _H_SPARK + " L376 212 L254 212 Z"
-
 
 def _hr_node(x, y, grad, up_cls, risk=False):
     ring = (
@@ -562,10 +516,8 @@ def _hr_node(x, y, grad, up_cls, risk=False):
         f'<circle r="13" fill="none" stroke="#fff" stroke-opacity=".25"/>{_avatar(0, 0, 11, grad)}</g></g>'
     )
 
-
 def _ring_pts(r, angles):
     return [(round(r * math.cos(math.radians(a)), 1), round(r * math.sin(math.radians(a)), 1)) for a in angles]
-
 
 _IN = _ring_pts(46, (90, 210, 330))
 _OUT = _ring_pts(86, (18, 90, 162, 234, 306))
@@ -581,7 +533,7 @@ _HR_CSS = """
 .h-spark{stroke-dasharray:100;animation:h-draw 6s linear infinite}
 @keyframes h-draw{0%{stroke-dashoffset:100}55%,90%{stroke-dashoffset:0}98%,100%{stroke-dashoffset:-100}}
 .h-flag{animation:c-cta 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
-@keyframes c-cta{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes c-cta{0%,100%{transform:scale(1)}}50%{transform:scale(1.04)}}}
 """
 
 _HR_NETWORK = (
@@ -645,14 +597,8 @@ ROOM_SCENES = {
 }
 
 
-# =====================  AI DATA-SCIENCE ART  (2nd picture, shown UNDER the room picture)  =====================
-#   sales -> a regression line learns to fit the data (residuals shrink, R² climbs)
-#   churn -> k-means clustering: scattered customers move into 3 segments
-#   hr    -> random-forest decision tree grows, then a prediction travels down it
-# Same 400x300 glass style as the room pictures above.
-
+# =====================  AI DATA-SCIENCE ART  =====================
 _M_SPL = ".4 0 .2 1;0 0 1 1;.4 0 .2 1"
-
 
 def _anim(attr, a, b, kt="0;.5;.9;1"):
     return (
@@ -660,13 +606,11 @@ def _anim(attr, a, b, kt="0;.5;.9;1"):
         f'repeatCount="indefinite" calcMode="spline" keySplines="{_M_SPL}"/>'
     )
 
-
 def _pill(x, y, w, txt, col, size=10):
     return (
         f'<rect x="{x}" y="{y}" width="{w}" height="20" rx="10" fill="{col}" fill-opacity=".16" stroke="{col}" stroke-opacity=".8"/>'
         + _t(x + w / 2, y + 14, txt, size, 700, col, "middle")
     )
-
 
 def _head(txt):
     return _t(34, 52, txt, 10, 600, "#9aa0d0", extra='letter-spacing="1.2"')
@@ -693,14 +637,11 @@ _M_CSS = """
 @keyframes t-dot{0%,52%{opacity:0}56%,84%{opacity:1}88%,100%{opacity:0}}
 """
 
-# ---------------------------------------------------------------- SALES: regression fit
 _RKT = "0;.55;.92;1"
 _R_PTS = [(50 + i * 22, round(215 - 0.42 * (i * 22) + 18 * math.sin(i * 1.9), 1)) for i in range(14)]
 
-
 def _ly(px, y1, y2):
     return round(y1 + (y2 - y1) * (px - 40) / 320, 1)
-
 
 _R_BODY_IN = (
     _head("AI MODEL · LEARNING")
@@ -709,14 +650,12 @@ _R_BODY_IN = (
         for y in (100, 140, 180, 220)
     )
     + '<line x1="40" y1="244" x2="360" y2="244" stroke="#a78bfa" stroke-opacity=".3"/>'
-    # residuals (follow the line while it moves)
     + "".join(
         f'<line x1="{px}" y1="{py}" x2="{px}" y2="{_ly(px, 219.2, 84.8)}" stroke="#fb7185" stroke-opacity=".65" stroke-width="1.6">'
         + _anim("y2", _ly(px, 120, 190), _ly(px, 219.2, 84.8), _RKT)
         + "</line>"
         for px, py in _R_PTS
     )
-    # the regression line (soft glow line + thin line, no filter: stays visible when horizontal)
     + '<line x1="40" x2="360" stroke="#a78bfa" stroke-opacity=".28" stroke-width="9" stroke-linecap="round" y1="219.2" y2="84.8">'
     + _anim("y1", 120, 219.2, _RKT) + _anim("y2", 190, 84.8, _RKT) + "</line>"
     '<line x1="40" x2="360" stroke="#e9d5ff" stroke-width="2.6" stroke-linecap="round" y1="219.2" y2="84.8">'
@@ -741,7 +680,6 @@ _AI_SALES = (
     '<circle class="tw" cx="8" cy="150" r="2" fill="#fff"/><circle class="tw" cx="394" cy="270" r="2" fill="#fff" style="animation-delay:-1.2s"/>'
 )
 
-# ---------------------------------------------------------------- CHURN: k-means clustering
 def _ai_cl(cx, cy, n, spread, seed):
     out = []
     for i in range(n):
@@ -749,7 +687,6 @@ def _ai_cl(cx, cy, n, spread, seed):
         r = 0.4 + 0.6 * (((i * 7 + seed) % 10) / 10)
         out.append((round(cx + spread * r * math.cos(a), 1), round(cy + spread * 0.8 * r * math.sin(a), 1)))
     return out
-
 
 _CL = [("#34d399", (110, 150), (70, 210)), ("#fbbf24", (280, 125), (330, 200)), ("#fb7185", (195, 205), (210, 95))]
 
@@ -792,19 +729,16 @@ _AI_CHURN = (
     + '<circle class="tw" cx="8" cy="40" r="2" fill="#fff"/><circle class="tw" cx="394" cy="262" r="2" fill="#fff" style="animation-delay:-1.4s"/>'
 )
 
-# ---------------------------------------------------------------- HR: random-forest decision tree
 _T_ROOT = (200, 100)
 _T_L1 = [(125, 156), (275, 156)]
 _T_L2 = [(88, 212), (162, 212), (238, 212), (312, 212)]
 _T_LEAF = [("Stay", "#34d399"), ("Leave", "#fb7185"), ("Stay", "#34d399"), ("Leave", "#fb7185")]
-
 
 def _seg(a, b, cls, col="#a78bfa"):
     return (
         f'<path class="{cls}" d="M{a[0]} {a[1]} L{b[0]} {b[1]}" pathLength="100" fill="none" '
         f'stroke="{col}" stroke-opacity=".7" stroke-width="2.2" stroke-linecap="round"/>'
     )
-
 
 _T_LINES = (
     "".join(_seg(_T_ROOT, p, "t-d1") for p in _T_L1)
@@ -850,20 +784,20 @@ AI_SCENES = {
 
 
 def _detect_room():
-    """Which room page is running? Look at the script file names on the call stack."""
     f = sys._getframe(2)
     while f is not None:
         name = os.path.basename(f.f_code.co_filename).lower()
-        if "sales" in name:
-            return "sales"
-        if "churn" in name:
-            return "churn"
-        if "hr_analytics" in name or name == "hr.py":
-            return "hr"
+        if "sales" in name: return "sales"
+        if "churn" in name: return "churn"
+        if "hr_analytics" in name or name == "hr.py": return "hr"
         f = f.f_back
     return None
 
 
+# ==========================================
+# CACHING FIX: اینیمیشنز کو کیش کرنے کے لیے
+# ==========================================
+@st.cache_data(show_spinner=False)
 def _room_scene_html(room: str, height: int) -> str:
     b64 = base64.b64encode(ROOM_SCENES[room].encode("utf-8")).decode()
     max_w = max(int(height * 1.5), 300)
@@ -873,35 +807,26 @@ def _room_scene_html(room: str, height: int) -> str:
         f'style="width:100%;max-width:{max_w}px;"/></div>'
     )
 
-
-def show_ai_art(room=None, max_width: int = 330):
-    """Second animated AI / data-science picture. show_robot() already calls this
-    for the room pages, so you do NOT need to call it yourself. A different scene per room:
-    sales = regression learning, churn = k-means clustering, hr = decision tree.
-    The room is auto-detected from the page file name, or pass room="sales" etc."""
-    room = room or _detect_room()
-    if room not in AI_SCENES:
-        return
+@st.cache_data(show_spinner=False)
+def _ai_art_html(room: str, max_width: int) -> str:
     b64 = base64.b64encode(AI_SCENES[room].encode("utf-8")).decode()
-    st.markdown(
+    return (
         '<div style="display:flex;justify-content:center;margin-top:0.4rem;">'
         f'<img src="data:image/svg+xml;base64,{b64}" alt="AI data science animation" '
-        f'style="width:100%;max-width:{max_width}px;"/></div>',
-        unsafe_allow_html=True,
+        f'style="width:100%;max-width:{max_width}px;"/></div>'
     )
+
+def show_ai_art(room=None, max_width: int = 330):
+    room = room or _detect_room()
+    if room in AI_SCENES:
+        st.markdown(_ai_art_html(room, max_width), unsafe_allow_html=True)
 
 
 @st.cache_data(show_spinner=False)
 def _robot_transparent_b64(path: str, mtime: float, tol: int = 18) -> str:
-    """
-    Remove the solid background of the robot image (flood-fill from the
-    corners) so it blends into the page. `mtime` only busts the cache when
-    the file changes.
-    """
     from PIL import Image, ImageDraw
-
     img = Image.open(path).convert("RGBA")
-    img.thumbnail((400, 400))  # floodfill is pure-Python: on a big image it can hang the app for minutes
+    img.thumbnail((400, 400))
     w, h = img.size
     for corner in [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)]:
         ImageDraw.floodfill(img, corner, (0, 0, 0, 0), thresh=tol)
@@ -911,15 +836,10 @@ def _robot_transparent_b64(path: str, mtime: float, tol: int = 18) -> str:
 
 
 def show_robot(height: int = 220, room=None):
-    """
-    Home page: the desk-developer Lottie animation (unchanged).
-    Room pages: their own animated scene ("sales", "churn" or "hr"). The room is
-    auto-detected from the page file name, or pass room="churn" explicitly.
-    """
     room = room or _detect_room()
     if room in ROOM_SCENES:
         st.markdown(_room_scene_html(room, height), unsafe_allow_html=True)
-        show_ai_art(room)   # 2nd animated AI / data-science picture, right under the first
+        show_ai_art(room)
         return
 
     try:
@@ -962,7 +882,6 @@ def show_robot(height: int = 220, room=None):
             unsafe_allow_html=True,
         )
     except Exception:
-        # Pillow problem etc. -> plain image so the page never breaks
         st.image(path, width=min(height, 220))
 
 
@@ -983,13 +902,8 @@ def fig_to_base64(fig) -> str:
 
 
 def build_html_report(title, intro, metrics: dict, figures_b64: list, notes: str) -> str:
-    rows = "".join(
-        f"<tr><td>{k}</td><td><b>{v}</b></td></tr>" for k, v in metrics.items()
-    )
-    imgs = "".join(
-        f'<img src="data:image/png;base64,{b}" style="max-width:100%;margin:12px 0;border-radius:8px;"/>'
-        for b in figures_b64
-    )
+    rows = "".join(f"<tr><td>{k}</td><td><b>{v}</b></td></tr>" for k, v in metrics.items())
+    imgs = "".join(f'<img src="data:image/png;base64,{b}" style="max-width:100%;margin:12px 0;border-radius:8px;"/>' for b in figures_b64)
     return f"""<!DOCTYPE html><html><head><meta charset="utf-8">
 <title>{title} — TriMind AI Report</title>
 <style>body{{font-family:Arial,sans-serif;background:#0E1117;color:#eee;max-width:900px;margin:auto;padding:24px}}

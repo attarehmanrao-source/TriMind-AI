@@ -11,7 +11,6 @@ from src.utils import (
     SLOGAN,
     apply_custom_css,
     render_footer,
-    render_sidebar,
     show_robot,
 )
 
@@ -19,7 +18,7 @@ st.set_page_config(
     page_title=APP_NAME,
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",   # sidebar nahi hai ab
 )
 
 apply_custom_css()
@@ -390,9 +389,7 @@ def render_ml_panel(height: int = 220):
 apply_home_css()
 
 
-# ---------------- Sidebar ----------------
-
-render_sidebar()
+# ---------------- Sidebar ----------------  (REMOVED — sidebar nahi chahiye)
 
 
 # ---------------- Hero ----------------
@@ -421,6 +418,9 @@ with st.container(key="hero_panel"):
             f"""
 <div class="hero-badge">🚀 Unified AI Intelligence Platform</div>
 <div class="hero-head">{logo_html}<div class="hero-title left">TriMind AI</div></div>
+<div style="color: #a78bfa; font-size: 1.05rem; font-weight: 600; margin-top: -0.3rem; margin-bottom: 0.6rem; letter-spacing: 0.5px;">
+    Developed by <span style="color: #fff;">M Atta Ur Rehman Khan</span>
+</div>
 <div class="hero-slogan left">{SLOGAN}</div>
 <div class="hero-desc">
 ✨ Welcome to <b class="brand">TriMind AI</b> — a unified intelligence platform

@@ -14,13 +14,19 @@ from src import hr
 from src.ui import (PALETTE, apply_page_css, best_banner, kpi, page_header,
                     result_card, section, style_fig, style_mpl)
 from src.utils import (apply_custom_css, build_html_report, fig_to_base64,
-                       play_voice, render_footer, render_sidebar, show_robot,
+                       play_voice, render_footer, show_robot,
                        validate_upload)
 
 st.set_page_config(page_title="HR Analytics — TriMind AI", page_icon="🧑‍💼", layout="wide")
 apply_custom_css()
-render_sidebar()
 apply_page_css(accent_rgb="251,191,36")
+
+# --- BACK BUTTON ---
+col1, col2 = st.columns([1, 5])
+with col1:
+    if st.button("⬅️ Back to Home", use_container_width=True):
+        st.switch_page("app.py") 
+# ------------------
 
 # ---------------- Tabs ko 2 rows mein todo (6 + 5) ----------------
 st.markdown("""
@@ -100,11 +106,14 @@ st.toast("Data cleaned ✅", icon="🧹")
 rate = df[hr.TARGET].mean() * 100
 
 # ---------------- FIX 2: Saved model auto-load ----------------
-# Refresh (F5) ke baad session_state khali hota hai. Agar models/hr_best_model.pkl
-# maujood hai to usay wapas load kar lo, taake "Train first" na aaye.
+# FIX: @st.cache_resource lagaya gaya hai taake model baar baar load na ho
+@st.cache_resource(show_spinner=False)
+def _load_saved_hr_model():
+    return hr.load_model("hr_best_model.pkl")
+
 if "hr_pipes" not in st.session_state:
     try:
-        saved = hr.load_model("hr_best_model.pkl")
+        saved = _load_saved_hr_model()
         _, X_te, _, y_te, _, _ = hr.split(df)
         res, _ = hr.evaluate({"Saved Model": saved}, X_te, y_te)
         st.session_state["hr_pipes"] = {"Saved Model": saved}

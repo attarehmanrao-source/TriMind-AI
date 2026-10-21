@@ -4,6 +4,7 @@ import os
 import joblib
 import numpy as np
 import pandas as pd
+import streamlit as st
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
@@ -21,6 +22,8 @@ CATEGORICAL = ["Segment", "Region", "Category", "Sub-Category", "Ship Mode"]
 RANDOM_STATE = 42
 
 
+# CACHING: ڈیٹا بار بار لوڈ نہ ہو اس لیے کیش کیا ہے
+@st.cache_data(show_spinner=False)
 def load_data(path="data/sales_sample.csv") -> pd.DataFrame:
     return pd.read_csv(path, encoding="latin1")
 
@@ -54,10 +57,12 @@ def _preprocessor():
 def get_models():
     return {
         "Linear Regression": LinearRegression(),
+        # Random Forest کو انتہائی ہلکا کر دیا (10 trees)
         "Random Forest": RandomForestRegressor(
-            n_estimators=150, random_state=RANDOM_STATE, n_jobs=-1),
+            n_estimators=10, random_state=RANDOM_STATE, n_jobs=1),
+        # Neural Network کو بھی بہت ہلکا کر دیا تاکہ فوراً ٹرین ہو
         "Neural Network (MLP)": MLPRegressor(
-            hidden_layer_sizes=(64, 32), max_iter=500, random_state=RANDOM_STATE),
+            hidden_layer_sizes=(10, 10), max_iter=50, random_state=RANDOM_STATE),
     }
 
 
@@ -101,7 +106,6 @@ def category_options(df: pd.DataFrame):
     return {c: sorted(df[c].astype(str).unique().tolist()) for c in CATEGORICAL}
 
 
-# --- NAYA FUNCTION: Model Save Karne Ke Liye ---
 def save_model(pipe, filename="sales_best_model.pkl"):
     """Trained model ko models/ folder mein save karta hai."""
     os.makedirs("models", exist_ok=True)
