@@ -7,7 +7,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import (StandardScaler, MinMaxScaler, OneHotEncoder,
-                                   OrdinalEncoder, LabelEncoder)
+                                   OrdinalEncoder, LabelEncoder, FunctionTransformer)
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.neural_network import MLPClassifier, MLPRegressor
@@ -19,10 +19,11 @@ ENCODING_OPTIONS = {
     "Label Encoding": OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1),
 }
 
+# Yahan "None" ke liye string ki jagah FunctionTransformer use kiya hai taake error na aaye
 SCALING_OPTIONS = {
     "Standardization (Z-score)": StandardScaler(),
     "Normalization (Min-Max)": MinMaxScaler(),
-    "None": "passthrough",
+    "None": FunctionTransformer(validate=False), 
 }
 
 MODELS = {
@@ -75,13 +76,14 @@ def train_and_evaluate(df, target, model_name, task, encoding, scaling, test_siz
     
     num_cols, txt_cols = split_column_types(X)
 
+    # FIX: Yahan direct `scaling` aur `encoding` use kiya gaya hai (pehle dictionary se dhoondne ki koshish ho rahi thi)
     num_transformer = Pipeline([
         ("imputer", SimpleImputer(strategy="median")),
-        ("scaler", SCALING_OPTIONS[scaling])
+        ("scaler", scaling)
     ])
     cat_transformer = Pipeline([
         ("imputer", SimpleImputer(strategy="most_frequent")),
-        ("encoder", ENCODING_OPTIONS[encoding])
+        ("encoder", encoding)
     ])
 
     transformers = []
