@@ -15,6 +15,7 @@ import streamlit as st
 from sklearn.pipeline import Pipeline
 
 from src import sales
+from src.pipeline_ui import render_pipeline_workflow  # <--- NAYA: Dynamic pipeline import kiya
 from src.utils import (apply_custom_css, build_html_report, fig_to_base64,
                        play_voice, render_footer, show_robot,
                        validate_upload)
@@ -81,34 +82,43 @@ with hc2:
 # ---------------- Data Source ----------------
 section(1, "Data Source", "Built-in sample data use karein ya apni CSV upload karein.")
 src_choice = st.radio("Data source", ["Sample data", "Upload CSV"], horizontal=True, label_visibility="collapsed")
-df = None
+
+# ==========================================
+# YAHAN CHANGE HUA HAI: 
+# Upload CSV select karne par naya dynamic pipeline chalega
+# ==========================================
 if src_choice == "Sample data":
     play_voice("loading")
     with st.status("Loading sample sales data…", expanded=True) as s:
         df = sales.load_data()
         s.update(label=f"Loaded {len(df):,} rows", state="complete")
+        
+    play_voice("cleaning")
+    with st.status("Cleaning data…", expanded=True) as s:
+        df = sales.clean_data(df)
+        s.update(label=f"Cleaned: {df.shape[0]:,} rows × {df.shape[1]} columns", state="complete")
+    st.toast("Data cleaned ✅", icon="🧹")
+
 else:
-    up = st.file_uploader("Upload a sales CSV", type=["csv"])
+    up = st.file_uploader("Upload a CSV", type=["csv"])
     if up:
-        raw = pd.read_csv(up, encoding="latin1")
-        ok, msg = validate_upload(raw, sales.REQUIRED_COLS)
-        if not ok:
-            st.error(msg)
-        else:
-            df = raw
-            st.success("Upload validated ✅")
+        # Sir ki hidayat ke mutabiq dynamic pipeline (Column delete, Encode, Scale)
+        render_pipeline_workflow(up, key_prefix="sales_mlp", start_num=2)
+    else:
+        st.info("Upload a CSV file to start the dynamic pipeline.")
+    
+    # Sample data wala code na chale isliye yahin stop kar diya
+    render_footer()
+    st.stop()
+
+# ==========================================
+# Neeche ka code sirf Sample Data ke liye chalega
+# ==========================================
 
 if df is None:
     st.info("Choose a data source to begin.")
     render_footer()
     st.stop()
-
-# ---------------- Clean ----------------
-play_voice("cleaning")
-with st.status("Cleaning data…", expanded=True) as s:
-    df = sales.clean_data(df)
-    s.update(label=f"Cleaned: {df.shape[0]:,} rows × {df.shape[1]} columns", state="complete")
-st.toast("Data cleaned ✅", icon="🧹")
 
 # ---------------- Saved model auto-load ----------------
 @st.cache_resource(show_spinner=False)

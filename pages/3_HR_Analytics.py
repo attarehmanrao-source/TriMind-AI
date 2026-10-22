@@ -11,6 +11,7 @@ from sklearn.metrics import roc_curve
 import streamlit as st
 
 from src import hr
+from src.pipeline_ui import render_pipeline_workflow  # <--- NAYA: Dynamic pipeline import kiya
 from src.ui import (PALETTE, apply_page_css, best_banner, kpi, page_header,
                     result_card, section, style_fig, style_mpl)
 from src.utils import (apply_custom_css, build_html_report, fig_to_base64,
@@ -59,7 +60,6 @@ div[data-baseweb="tab-border"] {
 STATUS_COLORS = {"Left": "#fbbf24", "Stayed": "#60a5fa"}
 MODEL_COLORS = ["#fbbf24", "#60a5fa", "#f472b6", "#34d399"]
 
-# FIX 1: ye variables upar define hain taake NameError kabhi na aaye
 mpl_b64 = ""
 cm_b64 = ""
 
@@ -74,39 +74,41 @@ with hc2:
 # ---------------- Data Source ----------------
 section(1, "Data Source", "Built-in sample data use karein ya apni CSV upload karein.")
 src_choice = st.radio("Data source", ["Sample data", "Upload CSV"], horizontal=True, label_visibility="collapsed")
-df = None
+
+# ==========================================
+# YAHAN CHANGE HUA HAI: 
+# Upload CSV select karne par naya dynamic pipeline chalega
+# ==========================================
 if src_choice == "Sample data":
     play_voice("loading")
     with st.status("Loading HR data…", expanded=True) as s:
         df = hr.load_data()
         s.update(label=f"Loaded {len(df):,} rows", state="complete")
-else:
-    up = st.file_uploader("Upload an HR CSV", type=["csv"])
-    if up:
-        raw = pd.read_csv(up)
-        ok, msg = validate_upload(raw, hr.REQUIRED_COLS)
-        if not ok:
-            st.error(msg)
-        else:
-            df = raw
-            st.success("Upload validated ✅")
+        
+    play_voice("cleaning")
+    with st.status("Cleaning data…", expanded=True) as s:
+        df = hr.clean_data(df)
+        s.update(label=f"Cleaned: {df.shape[0]:,} rows × {df.shape[1]} columns", state="complete")
+    st.toast("Data cleaned ✅", icon="🧹")
+    rate = df[hr.TARGET].mean() * 100
 
-if df is None:
-    st.info("Choose a data source to begin.")
+else:
+    up = st.file_uploader("Upload a CSV", type=["csv"])
+    if up:
+        # Sir ki hidayat ke mutabiq dynamic pipeline (Column delete, Encode, Scale)
+        render_pipeline_workflow(up, key_prefix="hr_mlp", start_num=2)
+    else:
+        st.info("Upload a CSV file to start the dynamic pipeline.")
+    
+    # Sample data wala code na chale isliye yahin stop kar diya
     render_footer()
     st.stop()
 
-# ---------------- Clean ----------------
-play_voice("cleaning")
-with st.status("Cleaning data…", expanded=True) as s:
-    df = hr.clean_data(df)
-    s.update(label=f"Cleaned: {df.shape[0]:,} rows × {df.shape[1]} columns", state="complete")
-st.toast("Data cleaned ✅", icon="🧹")
+# ==========================================
+# Neeche ka code sirf Sample Data ke liye chalega
+# ==========================================
 
-rate = df[hr.TARGET].mean() * 100
-
-# ---------------- FIX 2: Saved model auto-load ----------------
-# FIX: @st.cache_resource lagaya gaya hai taake model baar baar load na ho
+# ---------------- Saved model auto-load ----------------
 @st.cache_resource(show_spinner=False)
 def _load_saved_hr_model():
     return hr.load_model("hr_best_model.pkl")
@@ -218,8 +220,6 @@ with tab9:
         X_train, X_test, y_train, y_test, num, cat = hr.split(df)
         prog = st.progress(0, text="Training…")
         with st.status("Training models…", expanded=True) as s:
-            # FIX 3: duplicate code hata diya, hr.train_all() use karo
-            # (har model ka apna alag preprocessor clone hota hai)
             from sklearn.base import clone
             from sklearn.pipeline import Pipeline
             prep_template = hr._build_preprocessor(num, cat)
@@ -239,7 +239,6 @@ with tab9:
 
         results, probas = hr.evaluate(pipes, X_test, y_test)
 
-        # SAVE MODEL (Assignment Requirement)
         best_name = results.iloc[0]["Model"]
         hr.save_model(pipes[best_name], "hr_best_model.pkl", metadata=hr.build_metadata(df))
 
@@ -322,7 +321,6 @@ with tab_cmp:
         if len(cmp_res) < 2:
             st.info("Abhi sirf ek saved model load hai. Teeno ka muqabla karne ke liye **Model Evaluation** tab mein **Train 3 Models** dabayein.")
 
-        # ---- Winners ----
         st.subheader("🏆 Har metric ka winner")
         wcols = st.columns(len(metric_cols))
         for col, m in zip(wcols, metric_cols):
@@ -336,7 +334,6 @@ with tab_cmp:
                   .rank(ascending=False, method="min").mean(axis=1).sort_values())
         st.success(f"🥇 Overall best: **{rank_s.index[0]}** (average rank {rank_s.iloc[0]:.2f}, 1 = sab se behtar)")
 
-        # ---- Table ----
         st.subheader("📋 Metrics table (best value highlighted)")
         styled = (cmp_res.style
                   .highlight_max(subset=metric_cols, props="background-color:#fbbf24;color:#111;font-weight:bold")
@@ -345,7 +342,6 @@ with tab_cmp:
         st.download_button("📥 Download comparison (CSV)", cmp_res.to_csv(index=False),
                            file_name="hr_model_comparison.csv", mime="text/csv")
 
-        # ---- Bar + Radar ----
         g1, g2 = st.columns(2)
         with g1:
             melt_all = cmp_res.melt(id_vars="Model", value_vars=metric_cols, var_name="Metric", value_name="Score")
@@ -362,7 +358,6 @@ with tab_cmp:
             fig_r.update_layout(title="Radar Chart", polar=dict(radialaxis=dict(range=[0, 1])))
             st.plotly_chart(style_fig(fig_r), use_container_width=True)
 
-        # ---- ROC curves ----
         st.subheader("📉 ROC Curves")
         fig_roc = go.Figure()
         fig_roc.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode="lines", name="Random guess",
@@ -377,7 +372,6 @@ with tab_cmp:
         fig_roc.update_layout(xaxis_title="False Positive Rate", yaxis_title="True Positive Rate")
         st.plotly_chart(style_fig(fig_roc), use_container_width=True)
 
-        # ---- Errors ----
         st.subheader("🧩 Errors: kaun kitne employees miss karta hai?")
         err_rows, cms = [], {}
         for name, pipe in cmp_pipes.items():
@@ -396,7 +390,6 @@ with tab_cmp:
                 fig_cm.update_layout(coloraxis_showscale=False)
                 st.plotly_chart(style_fig(fig_cm), use_container_width=True)
 
-        # ---- Training time ----
         times = st.session_state.get("hr_times")
         if times:
             st.subheader("⏱️ Training time")
@@ -405,7 +398,6 @@ with tab_cmp:
                                              color_discrete_map=color_map, title="Training Time (seconds)")),
                             use_container_width=True)
 
-        # ---- Verdict ----
         st.subheader("📝 Natija")
         best_f1 = cmp_res.loc[cmp_res["F1"].idxmax()]
         best_rec = cmp_res.loc[cmp_res["Recall"].idxmax()]
